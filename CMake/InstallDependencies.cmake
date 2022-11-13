@@ -81,16 +81,15 @@ macro(copy_release INPUT)
 endmacro ()
 
 if (OGRE_INSTALL_DEPENDENCIES)
-  if (OGRE_STATIC)
-    # for static builds, projects must link against all Ogre dependencies themselves, so copy full include and lib dir
-    if (EXISTS ${OGRE_DEP_DIR}/include/)
-      install(DIRECTORY ${OGRE_DEP_DIR}/include/ DESTINATION include)
-    endif ()
-    
-    if (EXISTS ${OGRE_DEP_DIR}/lib/)
-        install(DIRECTORY ${OGRE_DEP_DIR}/lib/ DESTINATION ${OGRE_LIB_DIRECTORY})
-    endif ()
-  else ()
+  # for static builds, projects must link against all Ogre dependencies themselves, so copy full include and lib dir
+  if (EXISTS ${OGRE_DEP_DIR}/include/)
+    install(DIRECTORY ${OGRE_DEP_DIR}/include/ DESTINATION include)
+  endif ()
+
+  if (EXISTS ${OGRE_DEP_DIR}/lib/)
+    install(DIRECTORY ${OGRE_DEP_DIR}/lib/ DESTINATION ${OGRE_LIB_DIRECTORY})
+  endif ()
+  if (NOT OGRE_STATIC)
     if(WIN32 AND MINGW)
       install(FILES DESTINATION lib/debug CONFIGURATIONS Debug)
       install(FILES DESTINATION lib/relwithdebinfo CONFIGURATIONS RelWithDebInfo)
