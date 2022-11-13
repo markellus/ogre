@@ -915,6 +915,15 @@ MaterialPtr AssimpLoader::createMaterial(const aiMaterial* mat, const Ogre::Stri
     clr = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &clr))
     {
+        if (!mQuietMode)
+        {
+            LogManager::getSingleton().logMessage("Setting specular color to " +
+                                                      std::to_string(clr.r) + " "+
+                                                  std::to_string(clr.g)+" "+
+                                                  std::to_string(clr.b) +" "+
+                                                  std::to_string(clr.a));
+        }
+
         omat->setSpecular(clr.r, clr.g, clr.b, clr.a);
     }
 
@@ -999,6 +1008,24 @@ MaterialPtr AssimpLoader::createMaterial(const aiMaterial* mat, const Ogre::Stri
         StringUtil::splitFilename(String(path.data), basename, outPath);
         srs->setParameter("texture", basename);
         rs->addTemplateSubRenderState(srs);
+    }
+
+    if(mat->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS)
+    {
+        if (!mQuietMode)
+        {
+            LogManager::getSingleton().logMessage("Found specular map test: " + String(path.data));
+        }
+
+        StringUtil::splitFilename(String(path.data), basename, outPath);
+        if(omat->getTechnique(0)->getNumPasses() == 1)
+        {
+            omat->getTechnique(0)->createPass()->createTextureUnitState(basename);
+        }
+        else
+        {
+            omat->getTechnique(0)->getPass(1)->getTextureUnitState(0)->setTextureName(basename);
+        }
     }
 
     if (mat->GetTexture(aiTextureType_UNKNOWN, 0, &path) == AI_SUCCESS)
@@ -1320,7 +1347,7 @@ struct AssimpCodec : public Codec
         Mesh* dst = any_cast<Mesh*>(output);
 
         AssimpLoader::Options opts;
-        opts.params = AssimpLoader::LP_QUIET_MODE;
+        //opts.params = AssimpLoader::LP_QUIET_MODE;
         SkeletonPtr skeleton;
         AssimpLoader loader;
         loader.load(input, dst, skeleton, opts);
@@ -1337,8 +1364,8 @@ struct AssimpCodec : public Codec
         tmp.GetExtensionList(extensions);
 
         String blacklist[] = {"mesh", "mesh.xml", "raw", "mdc", "bsp"};
-        auto stream = LogManager::getSingleton().stream();
-        stream << "Supported formats:";
+        //auto stream = LogManager::getSingleton().stream();
+        //stream << "Supported formats:";
         // Register codecs
         for (const auto& dotext : StringUtil::split(extensions, ";"))
         {
@@ -1346,13 +1373,13 @@ struct AssimpCodec : public Codec
             if (std::find(begin(blacklist), std::end(blacklist), ext) != std::end(blacklist))
                 continue;
 
-            stream << " " << ext;
+            //stream << " " << ext;
             Codec* codec = new AssimpCodec(ext);
             registeredCodecs.push_back(std::unique_ptr<Codec>(codec));
             Codec::registerCodec(codec);
         }
 
-        stream << "\n";
+        //stream << "\n";
     }
     static void shutdown()
     {
