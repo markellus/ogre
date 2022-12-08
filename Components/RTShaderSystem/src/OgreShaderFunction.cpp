@@ -192,6 +192,14 @@ void FunctionStageRef::callBuiltin(const char* name, const std::vector<Operand>&
     function->setOperands(params);
     mParent->addAtomInstance(function);
 }
+void FunctionStageRef::callAlphaDiscard() {
+
+    auto function = new AlphaDiscardAtom(mStage);
+
+    
+    mParent->addAtomInstance(function);
+
+}
 
 //-----------------------------------------------------------------------------
 Function::~Function()

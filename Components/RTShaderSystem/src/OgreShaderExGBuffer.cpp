@@ -89,6 +89,8 @@ void GBuffer::addViewPosInvocations(ProgramSet* programSet, const ParameterPtr& 
 {
     Program* vsProgram = programSet->getCpuProgram(GPT_VERTEX_PROGRAM);
     Program* psProgram = programSet->getCpuProgram(GPT_FRAGMENT_PROGRAM);
+
+
     Function* vsMain = vsProgram->getMain();
     Function* psMain = psProgram->getMain();
 
@@ -102,6 +104,10 @@ void GBuffer::addViewPosInvocations(ProgramSet* programSet, const ParameterPtr& 
     // fragment shader
     auto fstage = psMain->getStage(FFP_PS_COLOUR_END);
     auto viewPos = psMain->resolveInputParameter(vsOutPos);
+
+    // Alpha Test raw implemented.
+    fstage.callAlphaDiscard();
+
 
     if(depthOnly)
     {
