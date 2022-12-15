@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include "OgreStableHeaders.h"
 #include "OgreShadowCameraSetupLiSPSM.h"
-#include "OgreLight.h"
 
 namespace Ogre
 {
@@ -248,12 +247,6 @@ namespace Ogre
 
         auto LView = texCam->getViewMatrix();
         auto LProj = texCam->getProjectionMatrix();
-
-        if(texCam->getProjectionType() == PT_ORTHOGRAPHIC)
-        {
-            // this is wrong, but masks another error where the frustum gets stuck on a single object
-            LProj = Affine3::getScale(1, 1, -1);
-        }
 
         // transform to light space: y -> -z, z -> y
         LProj = msNormalToLightSpace * LProj;

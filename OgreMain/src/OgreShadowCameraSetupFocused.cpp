@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 #include "OgreStableHeaders.h"
 #include "OgreShadowCameraSetupFocused.h"
-#include "OgreLight.h"
 
 namespace Ogre
 {
@@ -130,6 +129,12 @@ namespace Ogre
                     (cam.getDerivedDirection() * farDist);
                 Plane p(cam.getDerivedDirection(), pointOnPlane);
                 mBodyB.clip(p);
+            }
+
+            if(Root::getSingleton().getRenderSystem()->getCapabilities()->hasCapability(RSC_DEPTH_CLAMP))
+            {
+                out_bodyB->build(mBodyB);
+                return;
             }
 
             // Extrude the intersection bodyB into the inverted light direction and store 

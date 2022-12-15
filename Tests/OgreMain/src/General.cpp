@@ -52,6 +52,8 @@ THE SOFTWARE.
 
 #include "OgreHighLevelGpuProgram.h"
 
+#include "OgreKeyFrame.h"
+
 #include <random>
 using std::minstd_rand;
 
@@ -66,14 +68,14 @@ TEST_F(CameraTests,customProjectionMatrix)
     cam.setCustomProjectionMatrix(true, cam.getProjectionMatrix());
     for(int j = 0; j < 8; j++) {
         for(int k = 0; k < 3; k++) {
-            if(typeid(corners[j]) == typeid(float))
+            if(OGRE_DOUBLE_PRECISION == 0)
                 EXPECT_FLOAT_EQ(corners[j][k], cam.getWorldSpaceCorners()[j][k]);
             else
                 EXPECT_DOUBLE_EQ(corners[j][k], cam.getWorldSpaceCorners()[j][k]);
         }
     }
 
-    if(typeid(Ogre::Real) == typeid(float)) {
+    if(OGRE_DOUBLE_PRECISION == 0) {
         EXPECT_FLOAT_EQ(extents.bottom, cam.getFrustumExtents().bottom);
         EXPECT_FLOAT_EQ(extents.top, cam.getFrustumExtents().top);
         EXPECT_FLOAT_EQ(extents.left, cam.getFrustumExtents().left);
@@ -541,4 +543,27 @@ TEST(Light, AnimableValue)
     auto spotlightFalloff = l.createAnimableValue("spotlightFalloff");
     spotlightFalloff->applyDeltaValue(Real(1));
     EXPECT_EQ(l.getSpotlightFalloff(), 1);
+}
+
+TEST(Light, AnimationTrack)
+{
+    Light l;
+    l.setDiffuseColour(0, 0, 0);
+    l.setAttenuation(0, 0, 0, 0);
+
+    Animation anim("test", 1.0);
+    auto diffuse = anim.createNumericTrack(0, l.createAnimableValue("diffuseColour"));
+    diffuse->createNumericKeyFrame(0)->setValue(ColourValue(1, 2, 3, 0));
+    diffuse->createNumericKeyFrame(1)->setValue(ColourValue(2, 4, 6, 0));
+
+    diffuse->apply(0.5);
+
+    EXPECT_EQ(l.getDiffuseColour(), ColourValue(1.5, 3, 4.5));
+
+    auto attenuation = anim.createNumericTrack(1, l.createAnimableValue("attenuation"));
+    attenuation->createNumericKeyFrame(0)->setValue(Vector4(1, 2, 3, 4));
+    attenuation->createNumericKeyFrame(1)->setValue(Vector4(2, 4, 6, 8));
+
+    attenuation->apply(0.5);
+    EXPECT_EQ(l.getAttenuation(), Vector4f(1.5, 3, 4.5, 6));
 }
