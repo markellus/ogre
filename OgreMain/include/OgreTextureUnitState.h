@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include "OgreHeaderPrefix.h"
 
 namespace Ogre {
+    enum TexCoordCalcMethod : uint8;
+
     /** \addtogroup Core
     *  @{
     */
@@ -1024,8 +1026,8 @@ namespace Ogre {
         void _load(void);
         /** Internal method for unloading this object as part of Material::unload. */
         void _unload(void);
-        /// Returns whether this unit has texture coordinate generation that depends on the camera.
-        bool hasViewRelativeTextureCoordinateGeneration(void) const;
+        /// @deprecated do not use
+        OGRE_DEPRECATED bool hasViewRelativeTextureCoordinateGeneration(void) const;
 
         /// Is this loaded?
         bool isLoaded(void) const;
@@ -1068,6 +1070,8 @@ namespace Ogre {
 
         /// return a sampler local to this TUS instead of the shared global one
         const SamplerPtr& _getLocalSampler();
+
+        TexCoordCalcMethod _deriveTexCoordCalcMethod() const;
 private:
         // State
         /// The current animation frame.
@@ -1140,6 +1144,8 @@ private:
         void ensureLoaded(size_t frame) const;
 
         TexturePtr retrieveTexture(const String& name);
+
+        bool checkTexCalcSettings(const TexturePtr& tex) const;
     };
 
     /** @} */

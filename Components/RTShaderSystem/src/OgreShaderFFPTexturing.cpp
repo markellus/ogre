@@ -99,23 +99,22 @@ bool FFPTexturing::resolveUniformParams(TextureUnitParams* textureUnitParams, Pr
     // Resolve World + View matrices.
     case TEXCALC_ENVIRONMENT_MAP:
     case TEXCALC_ENVIRONMENT_MAP_PLANAR:    
+        mWorldMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_WORLDVIEW_MATRIX);
+        OGRE_FALLTHROUGH;
     case TEXCALC_ENVIRONMENT_MAP_NORMAL:
         //TODO: change the following 'mWorldITMatrix' member to 'mWorldViewITMatrix'
-        mWorldITMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_INVERSE_TRANSPOSE_WORLDVIEW_MATRIX);
-        mViewMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_VIEW_MATRIX);
-        mWorldMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_WORLD_MATRIX);
+        mWorldITMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_NORMAL_MATRIX);
         break;
 
     case TEXCALC_ENVIRONMENT_MAP_REFLECTION:
         mWorldMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_WORLD_MATRIX);
         mWorldITMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_INVERSE_TRANSPOSE_WORLD_MATRIX);
-        mViewMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_VIEW_MATRIX);
+        mViewMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_CAMERA_POSITION);
         break;
 
     case TEXCALC_PROJECTIVE_TEXTURE:
-        mWorldMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_WORLD_MATRIX);
         textureUnitParams->mTextureViewProjImageMatrix = vsProgram->resolveParameter(
-            GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, textureUnitParams->mTextureSamplerIndex);
+            GpuProgramParameters::ACT_TEXTURE_WORLDVIEWPROJ_MATRIX, textureUnitParams->mTextureSamplerIndex);
         break;
     }
 
@@ -155,20 +154,14 @@ bool FFPTexturing::resolveFunctionsParams(TextureUnitParams* textureUnitParams, 
             break;
 
         case TEXCALC_ENVIRONMENT_MAP:
-        case TEXCALC_ENVIRONMENT_MAP_PLANAR:        
-        case TEXCALC_ENVIRONMENT_MAP_NORMAL:
+        case TEXCALC_ENVIRONMENT_MAP_PLANAR:
+        case TEXCALC_ENVIRONMENT_MAP_REFLECTION:
             // Resolve vertex normal.
             mVSInputPos = vsMain->resolveInputParameter(Parameter::SPC_POSITION_OBJECT_SPACE);
+            OGRE_FALLTHROUGH;
+        case TEXCALC_ENVIRONMENT_MAP_NORMAL:
             mVSInputNormal = vsMain->resolveInputParameter(Parameter::SPC_NORMAL_OBJECT_SPACE);
             break;  
-
-        case TEXCALC_ENVIRONMENT_MAP_REFLECTION:
-
-            // Resolve vertex normal.
-            mVSInputNormal = vsMain->resolveInputParameter(Parameter::SPC_NORMAL_OBJECT_SPACE);
-            // Resolve vertex position.
-            mVSInputPos = vsMain->resolveInputParameter(Parameter::SPC_POSITION_OBJECT_SPACE);
-            break;
 
         case TEXCALC_PROJECTIVE_TEXTURE:
             // Resolve vertex position.
@@ -264,7 +257,7 @@ bool FFPTexturing::addVSFunctionInvocations(TextureUnitParams* textureUnitParams
     case TEXCALC_ENVIRONMENT_MAP:
     case TEXCALC_ENVIRONMENT_MAP_PLANAR:
         stage.callFunction(FFP_FUNC_GENERATE_TEXCOORD_ENV_SPHERE,
-                           {In(mWorldMatrix), In(mViewMatrix), In(mWorldITMatrix), In(mVSInputPos), In(mVSInputNormal),
+                           {In(mWorldMatrix), In(mWorldITMatrix), In(mVSInputPos), In(mVSInputNormal),
                             Out(textureUnitParams->mVSOutputTexCoord)});
         break;
     case TEXCALC_ENVIRONMENT_MAP_REFLECTION:
@@ -273,14 +266,12 @@ bool FFPTexturing::addVSFunctionInvocations(TextureUnitParams* textureUnitParams
                             Out(textureUnitParams->mVSOutputTexCoord)});
         break;
     case TEXCALC_ENVIRONMENT_MAP_NORMAL:
-        stage.callFunction(
-            FFP_FUNC_GENERATE_TEXCOORD_ENV_NORMAL,
-            {In(mWorldITMatrix), In(mViewMatrix), In(mVSInputNormal), Out(textureUnitParams->mVSOutputTexCoord)});
+        stage.callFunction(FFP_FUNC_GENERATE_TEXCOORD_ENV_NORMAL,
+                           {In(mWorldITMatrix), In(mVSInputNormal), Out(textureUnitParams->mVSOutputTexCoord)});
         break;
     case TEXCALC_PROJECTIVE_TEXTURE:
-        stage.callFunction(FFP_FUNC_GENERATE_TEXCOORD_PROJECTION,
-                           {In(mWorldMatrix), In(textureUnitParams->mTextureViewProjImageMatrix), In(mVSInputPos),
-                            Out(textureUnitParams->mVSOutputTexCoord)});
+        stage.callBuiltin("mul", {In(textureUnitParams->mTextureViewProjImageMatrix), In(mVSInputPos),
+                                  Out(textureUnitParams->mVSOutputTexCoord)});
         break;
     default:
         return false;
@@ -372,8 +363,8 @@ void FFPTexturing::addPSSampleTexelInvocation(TextureUnitParams* textureUnitPara
         return;
     }
 
-    stage.callFunction(FFP_FUNC_SAMPLE_TEXTURE_PROJ, textureUnitParams->mTextureSampler,
-                       textureUnitParams->mPSInputTexCoord, texel);
+    stage.callBuiltin("texture2DProj",
+                      {In(textureUnitParams->mTextureSampler), In(textureUnitParams->mPSInputTexCoord), Out(texel)});
 }
 
 //-----------------------------------------------------------------------
@@ -423,22 +414,19 @@ void FFPTexturing::addPSBlendInvocations(Function* psMain,
         stage.assign(In(arg2).mask(mask), Out(mPSOutDiffuse).mask(mask));
         break;
     case LBX_MODULATE:
-        stage.mul(In(arg1).mask(mask), In(arg2).mask(mask), Out(mPSOutDiffuse).mask(mask));
-        break;
     case LBX_MODULATE_X2:
-        stage.callFunction(FFP_FUNC_MODULATEX2, In(arg1).mask(mask), In(arg2).mask(mask),
-                           Out(mPSOutDiffuse).mask(mask));
-        break;
     case LBX_MODULATE_X4:
-        stage.callFunction(FFP_FUNC_MODULATEX4, In(arg1).mask(mask), In(arg2).mask(mask),
-                           Out(mPSOutDiffuse).mask(mask));
+        stage.mul(In(arg1).mask(mask), In(arg2).mask(mask), Out(mPSOutDiffuse).mask(mask));
+        if (blendMode.operation == LBX_MODULATE_X2)
+            stage.mul(In(mPSOutDiffuse).mask(mask), 2.0, Out(mPSOutDiffuse).mask(mask));
+        if (blendMode.operation == LBX_MODULATE_X4)
+            stage.mul(In(mPSOutDiffuse).mask(mask), 4.0, Out(mPSOutDiffuse).mask(mask));
         break;
     case LBX_ADD:
-        stage.add(In(arg1).mask(mask), In(arg2).mask(mask), Out(mPSOutDiffuse).mask(mask));
-        break;
     case LBX_ADD_SIGNED:
-        stage.callFunction(FFP_FUNC_ADDSIGNED, In(arg1).mask(mask), In(arg2).mask(mask),
-                           Out(mPSOutDiffuse).mask(mask));
+        stage.add(In(arg1).mask(mask), In(arg2).mask(mask), Out(mPSOutDiffuse).mask(mask));
+        if(blendMode.operation == LBX_ADD_SIGNED)
+            stage.sub(In(mPSOutDiffuse).mask(mask), 0.5, Out(mPSOutDiffuse).mask(mask));
         break;
     case LBX_ADD_SMOOTH:
         stage.callFunction(FFP_FUNC_ADDSMOOTH, In(arg1).mask(mask), In(arg2).mask(mask),
@@ -477,45 +465,7 @@ void FFPTexturing::addPSBlendInvocations(Function* psMain,
 //-----------------------------------------------------------------------
 TexCoordCalcMethod FFPTexturing::getTexCalcMethod(TextureUnitState* textureUnitState)
 {
-    TexCoordCalcMethod                      texCoordCalcMethod = TEXCALC_NONE;  
-    const TextureUnitState::EffectMap&      effectMap = textureUnitState->getEffects(); 
-    TextureUnitState::EffectMap::const_iterator effi;
-    
-    for (effi = effectMap.begin(); effi != effectMap.end(); ++effi)
-    {
-        switch (effi->second.type)
-        {
-        case TextureUnitState::ET_ENVIRONMENT_MAP:
-            if (effi->second.subtype == TextureUnitState::ENV_CURVED)
-            {
-                texCoordCalcMethod = TEXCALC_ENVIRONMENT_MAP;               
-            }
-            else if (effi->second.subtype == TextureUnitState::ENV_PLANAR)
-            {
-                texCoordCalcMethod = TEXCALC_ENVIRONMENT_MAP_PLANAR;                
-            }
-            else if (effi->second.subtype == TextureUnitState::ENV_REFLECTION)
-            {
-                texCoordCalcMethod = TEXCALC_ENVIRONMENT_MAP_REFLECTION;                
-            }
-            else if (effi->second.subtype == TextureUnitState::ENV_NORMAL)
-            {
-                texCoordCalcMethod = TEXCALC_ENVIRONMENT_MAP_NORMAL;                
-            }
-            break;
-        case TextureUnitState::ET_UVSCROLL:
-        case TextureUnitState::ET_USCROLL:
-        case TextureUnitState::ET_VSCROLL:
-        case TextureUnitState::ET_ROTATE:
-        case TextureUnitState::ET_TRANSFORM:
-            break;
-        case TextureUnitState::ET_PROJECTIVE_TEXTURE:
-            texCoordCalcMethod = TEXCALC_PROJECTIVE_TEXTURE;
-            break;
-        }
-    }
-
-    return texCoordCalcMethod;
+    return textureUnitState->_deriveTexCoordCalcMethod();
 }
 
 //-----------------------------------------------------------------------
@@ -658,23 +608,20 @@ void FFPTexturing::setTextureUnit(unsigned short index, TextureUnitState* textur
         break;
     }   
 
+    if(textureUnitState->isTextureLoadFailing())
+        return;
+
      curParams.mVSOutTextureCoordinateType = curParams.mVSInTextureCoordinateType;
-     curParams.mTexCoordCalcMethod = getTexCalcMethod(curParams.mTextureUnitState);
+     curParams.mTexCoordCalcMethod = textureUnitState->_deriveTexCoordCalcMethod();
 
     if (curParams.mTexCoordCalcMethod == TEXCALC_PROJECTIVE_TEXTURE)
-        curParams.mVSOutTextureCoordinateType = GCT_FLOAT3;
+        curParams.mVSOutTextureCoordinateType = GCT_FLOAT4;
 
     // let TexCalcMethod override texture type, as it might be wrong for
     // content_type shadow & content_type compositor
     if (curParams.mTexCoordCalcMethod == TEXCALC_ENVIRONMENT_MAP_REFLECTION ||
         curParams.mTexCoordCalcMethod == TEXCALC_ENVIRONMENT_MAP_NORMAL)
     {
-        if (textureUnitState->getContentType() == TextureUnitState::CONTENT_NAMED &&
-            curParams.mTextureSamplerType != GCT_SAMPLERCUBE)
-        {
-            const auto& matname = textureUnitState->getParent()->getParent()->getParent()->getName();
-            LogManager::getSingleton().logError(matname + " - env_map setting requires a cubic texture");
-        }
         curParams.mVSOutTextureCoordinateType = GCT_FLOAT3;
         curParams.mTextureSamplerType = GCT_SAMPLERCUBE;
     }
@@ -682,12 +629,6 @@ void FFPTexturing::setTextureUnit(unsigned short index, TextureUnitState* textur
     if (curParams.mTexCoordCalcMethod == TEXCALC_ENVIRONMENT_MAP_PLANAR ||
         curParams.mTexCoordCalcMethod == TEXCALC_ENVIRONMENT_MAP)
     {
-        if (textureUnitState->getContentType() == TextureUnitState::CONTENT_NAMED &&
-            curParams.mTextureSamplerType != GCT_SAMPLER2D)
-        {
-            const auto& matname = textureUnitState->getParent()->getParent()->getParent()->getName();
-            LogManager::getSingleton().logError(matname + " - env_map setting requires a 2d texture");
-        }
         curParams.mVSOutTextureCoordinateType = GCT_FLOAT2;
         curParams.mTextureSamplerType = GCT_SAMPLER2D;
     }
@@ -729,7 +670,7 @@ void FFPTexturingFactory::writeInstance(MaterialSerializer* ser, SubRenderState*
                                      Pass* srcPass, Pass* dstPass)
 {
     ser->writeAttribute(4, "texturing_stage");
-    ser->writeValue("ffp");
+    ser->writeValue("late_add_blend"); // this is the only case where somebody would add this as a custom SRS
 }
 
 //-----------------------------------------------------------------------
