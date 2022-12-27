@@ -103,7 +103,6 @@ namespace Ogre
         , mCompositeMapEnabled(true)
         , mReceiveDynamicShadows(true)
         , mPSSM(0)
-        , mDepthShadows(false)
         , mLowLodShadows(false)
     {
     }
@@ -197,16 +196,6 @@ namespace Ogre
         }
     }
     //---------------------------------------------------------------------
-    void TerrainMaterialGeneratorA::SM2Profile::setReceiveDynamicShadowsDepth(bool enabled)
-    {
-        if (enabled != mDepthShadows)
-        {
-            mDepthShadows = enabled;
-            mParent->_markChanged();
-        }
-
-    }
-    //---------------------------------------------------------------------
     void TerrainMaterialGeneratorA::SM2Profile::setReceiveDynamicShadowsLowLod(bool enabled)
     {
         if (enabled != mLowLodShadows)
@@ -274,6 +263,12 @@ namespace Ogre
         pass->getUserObjectBindings().setUserAny("Terrain", terrain);
         pass->setSpecular(ColourValue::White);
         pass->setShininess(32); // user param
+
+        if(mLayerSpecularMappingEnabled)
+        {
+            // we use this to inject our specular map
+            pass->setVertexColourTracking(TVC_SPECULAR);
+        }
 
         using namespace RTShader;
         auto mainRenderState = std::make_shared<TargetRenderState>();
