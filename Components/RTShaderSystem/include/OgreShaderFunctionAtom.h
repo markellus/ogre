@@ -326,6 +326,15 @@ public:
     void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
 };
 
+class _OgreRTSSExport InlineCodeAtom : public FunctionAtom
+{
+private:
+    const std::string mCode;
+public:
+    InlineCodeAtom(const std::string& code, int groupOrder) : mCode(code) { mGroupExecutionOrder = groupOrder; }
+    void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
+};
+
 typedef std::vector<FunctionAtom*>                 FunctionAtomInstanceList;
 typedef FunctionAtomInstanceList::iterator          FunctionAtomInstanceIterator;
 typedef FunctionAtomInstanceList::const_iterator    FunctionAtomInstanceConstIterator;

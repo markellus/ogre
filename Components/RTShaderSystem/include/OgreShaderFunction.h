@@ -100,6 +100,8 @@ public:
         callBuiltin(name, {arg0, arg1, arg2, ret});
     }
 
+    void inlineCode(const std::string& code);
+
 private:
     uint32 mStage;
     Function* mParent;

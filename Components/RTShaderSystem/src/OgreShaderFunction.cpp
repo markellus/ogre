@@ -193,6 +193,12 @@ void FunctionStageRef::callBuiltin(const char* name, const std::vector<Operand>&
     mParent->addAtomInstance(function);
 }
 
+void FunctionStageRef::inlineCode(const std::string& code)
+{
+    auto function = new InlineCodeAtom(code, mStage);
+    mParent->addAtomInstance(function);
+}
+
 //-----------------------------------------------------------------------------
 Function::~Function()
 {

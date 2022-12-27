@@ -472,5 +472,10 @@ void BuiltinFunctionAtom::writeSourceCode(std::ostream& os, const String& target
     os << ");";
 }
 
+void InlineCodeAtom::writeSourceCode(std::ostream& os, const String& targetLanguage) const
+{
+    os << "\t" << mCode;
+}
+
 }
 }
