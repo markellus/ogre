@@ -99,8 +99,6 @@ public:
     {
         callBuiltin(name, {arg0, arg1, arg2, ret});
     }
-    /// Alhpa Discard for Billboards usw.
-    void callAlphaDiscard();
 
 private:
     uint32 mStage;
@@ -216,8 +214,6 @@ public:
     @param atomInstance The atom instance to add.
     */
     void addAtomInstance(FunctionAtom* atomInstance);
-
-
 
     /// get a @ref FFPShaderStage of this function
     FunctionStageRef getStage(uint32 s)
