@@ -472,17 +472,9 @@ void BuiltinFunctionAtom::writeSourceCode(std::ostream& os, const String& target
     os << ");";
 }
 
-AlphaDiscardAtom::AlphaDiscardAtom(int groupOrder)
+void InlineCodeAtom::writeSourceCode(std::ostream& os, const String& targetLanguage) const
 {
-    mGroupExecutionOrder = groupOrder;
-    mFunctionName = "AlphaDiscard";
-}
-
-void AlphaDiscardAtom::writeSourceCode(std::ostream& os, const String& targetLanguage) const
-{
-    //could set a Parameter as value
-    os << "if(texel_0.a < 0.5){discard;}";
-
+    os << "\t" << mCode;
 }
 
 }

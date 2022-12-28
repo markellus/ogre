@@ -192,13 +192,11 @@ void FunctionStageRef::callBuiltin(const char* name, const std::vector<Operand>&
     function->setOperands(params);
     mParent->addAtomInstance(function);
 }
-void FunctionStageRef::callAlphaDiscard() {
 
-    auto function = new AlphaDiscardAtom(mStage);
-
-    
+void FunctionStageRef::inlineCode(const std::string& code)
+{
+    auto function = new InlineCodeAtom(code, mStage);
     mParent->addAtomInstance(function);
-
 }
 
 //-----------------------------------------------------------------------------

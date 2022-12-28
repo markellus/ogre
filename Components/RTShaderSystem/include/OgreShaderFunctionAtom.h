@@ -304,14 +304,6 @@ public:
     void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
 };
 
-class _OgreRTSSExport AlphaDiscardAtom : public FunctionAtom
-{
-public:
-    //explicit AlphaDiscardAtom(int groupOrder) { mGroupExecutionOrder = groupOrder; }
-    AlphaDiscardAtom(int groupOrder);
-    void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
-};
-
 /// shorthand for "dst = a OP b;"
 class _OgreRTSSExport BinaryOpAtom : public FunctionAtom
 {
@@ -331,6 +323,15 @@ public:
         mFunctionName = builtin;
         mGroupExecutionOrder = groupOrder;
     }
+    void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
+};
+
+class _OgreRTSSExport InlineCodeAtom : public FunctionAtom
+{
+private:
+    const std::string mCode;
+public:
+    InlineCodeAtom(const std::string& code, int groupOrder) : mCode(code) { mGroupExecutionOrder = groupOrder; }
     void writeSourceCode(std::ostream& os, const String& targetLanguage) const override;
 };
 
