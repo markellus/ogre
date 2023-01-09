@@ -416,11 +416,20 @@ namespace Ogre {
     //-----------------------------------------------------------------------
     void RenderSystem::_setTextureUnitSettings(size_t texUnit, TextureUnitState& tl)
     {
+        if(texUnit >= getCapabilities()->getNumTextureUnits())
+            return;
+
         // This method is only ever called to set a texture unit to valid details
         // The method _disableTextureUnit is called to turn a unit off
         TexturePtr tex = tl._getTexturePtr();
         if(!tex || tl.isTextureLoadFailing())
             tex = mTextureManager->_getWarningTexture();
+
+        if(tl.getUnorderedAccessMipLevel() > -1)
+        {
+            tex->createShaderAccessPoint(texUnit, TA_READ_WRITE, tl.getUnorderedAccessMipLevel());
+            return;
+        }
 
         // Bind texture (may be blank)
         _setTexture(texUnit, true, tex);

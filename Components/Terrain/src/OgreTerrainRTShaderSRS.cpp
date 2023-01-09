@@ -106,6 +106,10 @@ bool TerrainSurface::setParameter(const String& name, const String& value)
     {
         return StringConverter::parse(value, mUseSpecularMapping);
     }
+    else if (name == "use_normal_mapping")
+    {
+        return StringConverter::parse(value, mUseNormalMapping);
+    }
 
     return false;
 }
@@ -144,7 +148,7 @@ bool TerrainSurface::preAddToRenderState(const RenderState* renderState, Pass* s
 
     mUVMul.resize((mTerrain->getLayerCount() + 3) / 4); // integer ceil
 
-    mUseNormalMapping = !mTerrain->getLayerTextureName(0, 1).empty();
+    mUseNormalMapping = mUseNormalMapping && !mTerrain->getLayerTextureName(0, 1).empty();
     for (int i = 0; i < mTerrain->getLayerCount(); ++i)
     {
         srcPass->createTextureUnitState(mTerrain->getLayerTextureName(i, 0));
@@ -248,10 +252,10 @@ bool TerrainSurface::createCpuSubPrograms(ProgramSet* programSet)
     }
 
     stage.assign(Vector4::ZERO, diffuseSpec);
-    stage.assign(Vector3::ZERO, TSnormal);
+    stage.assign(Vector3(0, 0, 1), TSnormal);
     for (int l = 0; l < mTerrain->getLayerCount(); ++l)
     {
-        auto blendWeight = l == 0 ? In(1.0f) :  In(blendWeights[0]).mask(channel[(l - 1) % 4]);
+        auto blendWeight = l == 0 ? In(1.0f) : In(blendWeights[(l - 1) / 4]).mask(channel[(l - 1) % 4]);
         auto difftex = psProgram->resolveParameter(GCT_SAMPLER2D, "difftex", texUnit++);
         std::vector<Operand> args = {blendWeight, In(uvPS), In(mUVMul[l/4]).mask(channel[l % 4])};
         if (mUseNormalMapping)
@@ -275,7 +279,7 @@ bool TerrainSurface::createCpuSubPrograms(ProgramSet* programSet)
 
     // fake vertexcolour input for TVC_SPECULAR
     if(mUseSpecularMapping)
-        stage.mul(In(diffuseSpec).z(), Vector4(1), diffuse);
+        stage.mul(In(diffuseSpec).w(), Vector4(1), diffuse);
 
     if(lightMap)
     {

@@ -270,8 +270,8 @@ bool FFPTexturing::addVSFunctionInvocations(TextureUnitParams* textureUnitParams
                            {In(mWorldITMatrix), In(mVSInputNormal), Out(textureUnitParams->mVSOutputTexCoord)});
         break;
     case TEXCALC_PROJECTIVE_TEXTURE:
-        stage.callBuiltin("mul", {In(textureUnitParams->mTextureViewProjImageMatrix), In(mVSInputPos),
-                                  Out(textureUnitParams->mVSOutputTexCoord)});
+        stage.callBuiltin("mul", textureUnitParams->mTextureViewProjImageMatrix, mVSInputPos,
+                          textureUnitParams->mVSOutputTexCoord);
         break;
     default:
         return false;
@@ -363,8 +363,7 @@ void FFPTexturing::addPSSampleTexelInvocation(TextureUnitParams* textureUnitPara
         return;
     }
 
-    stage.callBuiltin("texture2DProj",
-                      {In(textureUnitParams->mTextureSampler), In(textureUnitParams->mPSInputTexCoord), Out(texel)});
+    stage.callBuiltin("texture2DProj", textureUnitParams->mTextureSampler, textureUnitParams->mPSInputTexCoord, texel);
 }
 
 //-----------------------------------------------------------------------
@@ -576,6 +575,9 @@ void FFPTexturing::setTextureUnit(unsigned short index, TextureUnitState* textur
     curParams.mTextureSamplerIndex = index;
     curParams.mTextureUnitState    = textureUnitState;
 
+    if(textureUnitState->isTextureLoadFailing()) // -> will be set to a 2D texture
+        return;
+
     bool isGLES2 = ShaderGenerator::getSingleton().getTargetLanguage() == "glsles";
 
     switch (curParams.mTextureUnitState->getTextureType())
@@ -607,9 +609,6 @@ void FFPTexturing::setTextureUnit(unsigned short index, TextureUnitState* textur
         curParams.mVSInTextureCoordinateType = GCT_FLOAT3;
         break;
     }   
-
-    if(textureUnitState->isTextureLoadFailing())
-        return;
 
      curParams.mVSOutTextureCoordinateType = curParams.mVSInTextureCoordinateType;
      curParams.mTexCoordCalcMethod = textureUnitState->_deriveTexCoordCalcMethod();

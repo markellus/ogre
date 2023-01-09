@@ -527,30 +527,30 @@ namespace Ogre
 
     AbstractNodeList ScriptCompiler::locateTarget(const AbstractNodeList& nodes, const Ogre::String &target)
     {
-        auto iter = nodes.end();
+        SharedPtr<AbstractNode> iter = nullptr;
     
         // Search for a top-level object node
-        for(auto i = nodes.begin(); i != nodes.end(); ++i)
+        for(auto i : nodes)
         {
-            if((*i)->type == ANT_OBJECT)
+            if(i->type == ANT_OBJECT)
             {
-                ObjectAbstractNode *impl = (ObjectAbstractNode*)(*i).get();
+                ObjectAbstractNode *impl = (ObjectAbstractNode*)i.get();
                 if(impl->name == target)
                     iter = i;
             }
         }
 
         AbstractNodeList newNodes;
-        if(iter != nodes.end())
+        if(iter)
         {
-            newNodes.push_back(*iter);
+            newNodes.push_back(iter);
         }
         return newNodes;
     }
 
     void ScriptCompiler::processObjects(AbstractNodeList& nodes, const AbstractNodeList &top)
     {
-        for(auto & node : nodes)
+        for(auto& node : nodes)
         {
             if(node->type == ANT_OBJECT)
             {
@@ -1203,6 +1203,7 @@ namespace Ogre
         mIds["auto"] = ID_AUTO;
         mIds["camera"] = ID_CAMERA;
         mIds["align_to_face"] = ID_ALIGN_TO_FACE;
+        mIds["unordered_access_mip"] = ID_UNORDERED_ACCESS_MIP;
 
 		mLargestRegisteredWordId = ID_END_BUILTIN_IDS;
 	}

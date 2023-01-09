@@ -130,6 +130,7 @@ namespace Ogre
     {
         mpTex.Reset();
         mpShaderResourceView.Reset();
+        mpUnorderedAccessView.Reset();
         mp1DTex.Reset();
         mp2DTex.Reset();
         mp3DTex.Reset();
@@ -383,6 +384,19 @@ namespace Ogre
                 : S_FALSE);
 
         this->_setFinalAttributes(desc.Width, desc.Height, desc.ArraySize / getNumFaces(), D3D11Mappings::_getPF(desc.Format), desc.MiscFlags);
+    }
+
+    void D3D11Texture::createShaderAccessPoint(uint bindPoint, TextureAccess access, int mipmapLevel,
+                                               int textureArrayIndex, PixelFormat format)
+    {
+        if(mpUnorderedAccessView)
+            return;
+        D3D11_UNORDERED_ACCESS_VIEW_DESC descUAV;
+        descUAV.Format = mD3DFormat;
+        descUAV.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+        descUAV.Texture2D.MipSlice = static_cast<UINT>( mipmapLevel );
+
+        mDevice->CreateUnorderedAccessView( mp2DTex.Get(), &descUAV, mpUnorderedAccessView.ReleaseAndGetAddressOf() );
     }
     //---------------------------------------------------------------------
     void D3D11Texture::_create3DTex()

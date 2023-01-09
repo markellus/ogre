@@ -132,7 +132,7 @@ namespace Ogre
         switch(level)
         {
         case PM_POINTS:
-            return D3D11_FILL_SOLID; // this will done in a geometry shader like in the FixedFuncEMU sample  and the shader needs solid
+            return D3D11_FILL_SOLID;
         case PM_WIREFRAME:
             return D3D11_FILL_WIREFRAME;
         case PM_SOLID:
@@ -432,7 +432,7 @@ namespace Ogre
         case DXGI_FORMAT_R10G10B10A2_TYPELESS:      return PF_UNKNOWN;
         case DXGI_FORMAT_R10G10B10A2_UNORM:         return PF_A2B10G10R10;
         case DXGI_FORMAT_R10G10B10A2_UINT:          return PF_UNKNOWN;
-        case DXGI_FORMAT_R11G11B10_FLOAT:           return PF_UNKNOWN;
+        case DXGI_FORMAT_R11G11B10_FLOAT:           return PF_R11G11B10_FLOAT;
         case DXGI_FORMAT_R8G8B8A8_TYPELESS:         return PF_UNKNOWN;
         case DXGI_FORMAT_R8G8B8A8_UNORM:            return PF_A8B8G8R8;
         case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:       return PF_A8B8G8R8;
@@ -552,6 +552,7 @@ namespace Ogre
         case PF_X8B8G8R8:       return DXGI_FORMAT_UNKNOWN;
         case PF_A2B10G10R10:    return DXGI_FORMAT_R10G10B10A2_TYPELESS;
         case PF_A2R10G10B10:    return DXGI_FORMAT_UNKNOWN;
+        case PF_R11G11B10_FLOAT:return DXGI_FORMAT_R11G11B10_FLOAT;
         case PF_FLOAT16_R:      return DXGI_FORMAT_R16_FLOAT;
         case PF_FLOAT16_GR:     return DXGI_FORMAT_R16G16_FLOAT;
         case PF_FLOAT16_RGBA:   return DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -750,7 +751,7 @@ namespace Ogre
         if( isRenderTarget )
             retVal |= D3D11_BIND_RENDER_TARGET;
 
-        if( usage & TU_UAV )
+        if( usage & TU_UNORDERED_ACCESS )
             retVal |= D3D11_BIND_UNORDERED_ACCESS;
 
         return retVal;

@@ -80,6 +80,7 @@ THE SOFTWARE.
 #include "OgreShaderExGBuffer.h"
 #include "OgreShaderExWBOIT.h"
 #include "OgreShaderCookTorranceLighting.h"
+#include "OgreShaderImageBasedLighting.h"
 
 #include "OgreShaderHLSLProgramProcessor.h"
 #include "OgreShaderGLSLProgramProcessor.h"
@@ -87,7 +88,6 @@ THE SOFTWARE.
 #include "OgreShaderProgramWriter.h"
 #include "OgreShaderProgramWriterManager.h"
 #include "OgreShaderCGProgramWriter.h"
-#include "OgreShaderHLSLProgramWriter.h"
 #include "OgreShaderGLSLProgramWriter.h"
 #include "OgreShaderGLSLESProgramWriter.h"
 
