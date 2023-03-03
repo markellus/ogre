@@ -1468,7 +1468,8 @@ namespace Ogre
 
         if (indexUse)
         {
-            indexUse->variability = GPV_GLOBAL;
+            // do not clear variability, indexUse is shared across all instances
+
             size_t physicalIndex = indexUse->physicalIndex;
             // update existing index if it exists
             for (AutoConstantList::iterator i = mAutoConstants.begin();
@@ -1488,7 +1489,7 @@ namespace Ogre
         const GpuConstantDefinition* def = _findNamedConstantDefinition(name);
         if (def)
         {
-            def->variability = GPV_GLOBAL;
+            // do not clear variability, def is shared across all instances
 
             // Autos are always floating point
             if (def->isFloat()) {
@@ -1832,7 +1833,7 @@ namespace Ogre
                     break;
                 case ACT_LIGHT_POSITION_OBJECT_SPACE_ARRAY:
                     for (size_t l = 0; l < ac.data; ++l)
-                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4),
+                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4f),
                                           source->getInverseWorldMatrix() *
                                               source->getLightAs4DVector(l),
                                           ac.elementCount);
@@ -2084,7 +2085,7 @@ namespace Ogre
                 case ACT_LIGHT_POSITION_ARRAY:
                     // Get as 4D vector, works for directional lights too
                     for (size_t l = 0; l < ac.data; ++l)
-                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4),
+                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4f),
                                           source->getLightAs4DVector(l), ac.elementCount);
                     break;
 
@@ -2100,7 +2101,7 @@ namespace Ogre
 
                 case ACT_LIGHT_POSITION_VIEW_SPACE_ARRAY:
                     for (size_t l = 0; l < ac.data; ++l)
-                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4),
+                        _writeRawConstant(ac.physicalIndex + l*sizeof(Vector4f),
                                           source->getViewMatrix() *
                                               source->getLightAs4DVector(l),
                                           ac.elementCount);
