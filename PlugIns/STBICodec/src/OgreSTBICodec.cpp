@@ -211,7 +211,15 @@ namespace Ogre {
     //---------------------------------------------------------------------
     String STBIImageCodec::magicNumberToFileExt(const char *magicNumberPtr, size_t maxbytes) const
     {
-        return BLANKSTRING;
+        int x, y, comp;
+        if (!stbi_info_from_memory((const uchar*)magicNumberPtr, maxbytes, &x, &y, &comp))
+        {
+            return BLANKSTRING;
+        }
+        else
+        {
+            return "png";
+        }
     }
 
     const String& STBIPlugin::getName() const {
