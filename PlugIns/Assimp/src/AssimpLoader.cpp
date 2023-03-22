@@ -955,7 +955,7 @@ static MaterialPtr createMaterial(const aiMaterial* mat, const Ogre::String &gro
     clr = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &clr))
     {
-        if (!mQuietMode)
+        if (!verbose)
         {
             LogManager::getSingleton().logMessage("Setting specular color to " +
                                                       std::to_string(clr.r) + " "+
