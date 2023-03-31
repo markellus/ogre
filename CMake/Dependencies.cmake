@@ -48,14 +48,14 @@ set(OGREDEPS_SHARED FALSE)
 
 # get available processor cores
 include(ProcessorCount)
-ProcessorCount(N)
+ProcessorCount(NPROC)
 
 # can not get processor cores, fallback to default value
-if(N EQUAL 0)
-    set(N 2)
+if(NPROC EQUAL 0)
+    set(NPROC 2)
 endif()
 
-set(BUILD_COMMAND_OPTS --target install -j ${N} --config ${CMAKE_BUILD_TYPE})
+set(BUILD_COMMAND_OPTS --target install -j ${NPROC} --config ${CMAKE_BUILD_TYPE})
 
 set(BUILD_COMMAND_COMMON ${CMAKE_COMMAND}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
