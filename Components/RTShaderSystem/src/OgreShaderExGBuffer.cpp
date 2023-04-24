@@ -156,8 +156,15 @@ void GBuffer::addNormalInvocations(ProgramSet* programSet, const ParameterPtr& o
 
     auto fstage = psMain->getStage(FFP_PS_COLOUR_END);
     auto viewNormal = psMain->getLocalParameter(Parameter::SPC_NORMAL_VIEW_SPACE);
+
     if(!viewNormal)
     {
+        //TODO wieder einbauen für normalmapping
+       // //Working TangentValues for TBN Matrix Calc in FS
+       // auto vsInTangent = vsMain->resolveInputParameter(Parameter::SPC_TANGENT_OBJECT_SPACE);
+       // auto vsOutTangent = vsMain->resolveOutputParameter(Parameter::SPC_TANGENT_OBJECT_SPACE);
+       // auto psInTangent = psMain->resolveInputParameter(vsOutTangent);
+
         // compute vertex shader normal
         auto vstage = vsMain->getStage(FFP_VS_LIGHTING);
         auto vsInNormal = vsMain->resolveInputParameter(Parameter::SPC_NORMAL_OBJECT_SPACE);
@@ -165,6 +172,10 @@ void GBuffer::addNormalInvocations(ProgramSet* programSet, const ParameterPtr& o
         auto worldViewITMatrix = vsProgram->resolveParameter(GpuProgramParameters::ACT_NORMAL_MATRIX);
         vstage.callFunction(FFP_FUNC_TRANSFORM, worldViewITMatrix, vsInNormal, vsOutNormal);
         vstage.callBuiltin("normalize", vsOutNormal, vsOutNormal);
+
+        //TODO wieder einbauen für normalmapping
+        //the same for the tangent
+      //  vstage.callFunction(FFP_FUNC_TRANSFORM,worldViewITMatrix,vsInTangent,vsOutTangent);
 
         // pass through
         viewNormal = psMain->resolveInputParameter(vsOutNormal);
