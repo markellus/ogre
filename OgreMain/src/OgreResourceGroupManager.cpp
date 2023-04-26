@@ -79,7 +79,7 @@ namespace Ogre {
         mResourceGroupMap.clear();
     }
     //-----------------------------------------------------------------------
-    void ResourceGroupManager::createResourceGroup(const String& name, bool inGlobalPool)
+    void ResourceGroupManager::createResourceGroup(const String& name, bool inGlobalPool, const String& parent)
     {
         LogManager::getSingleton().logMessage("Creating resource group " + name);
         if (getResourceGroup(name))
@@ -96,6 +96,14 @@ namespace Ogre {
 
         OGRE_LOCK_AUTO_MUTEX;
         mResourceGroupMap.emplace(name, grp);
+
+        if(!parent.empty())
+        {
+            for(const auto& iter : mResourceManagerMap)
+            {
+                iter.second->addGroupHierarchy(parent, name);
+            }
+        }
     }
     //-----------------------------------------------------------------------
     void ResourceGroupManager::initialiseResourceGroup(const String& name)

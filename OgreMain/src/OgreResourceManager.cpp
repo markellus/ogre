@@ -410,6 +410,13 @@ namespace Ogre {
                 }
             }
 
+            // Look in parent group
+            auto itHierarchy = mGroupHierarchy.find(groupName);
+            if(itHierarchy != mGroupHierarchy.end())
+            {
+                return getResourceByName(name, itHierarchy->second);
+            }
+
 #if !OGRE_RESOURCEMANAGER_STRICT
             // fall back to global
             auto it = mResources.find(name);
@@ -552,6 +559,11 @@ namespace Ogre {
             i->getCreator()->remove(i->getHandle());
         }
         mItems.clear();
+    }
+
+    void ResourceManager::addGroupHierarchy(const String& parent, const String& child)
+    {
+        mGroupHierarchy.emplace(child, parent);
     }
 }
 

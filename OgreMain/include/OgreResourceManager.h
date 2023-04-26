@@ -391,6 +391,12 @@ namespace Ogre {
         /** Gets whether this manager and its resources habitually produce log output */
         bool getVerbose(void) { return mVerbose; }
 
+        /**
+         * Adds a group as a child of another group, creating a hierarchy structure. If a resource can not be found
+         * in a child group, the parent group will be tested.
+         */
+        void addGroupHierarchy(const String& parent, const String& child);
+
         /** Definition of a pool of resources, which users can use to reuse similar
             resources many times without destroying and recreating them.
 
@@ -470,6 +476,8 @@ namespace Ogre {
         size_t mMemoryBudget; /// In bytes
         std::atomic<ResourceHandle> mNextHandle;
         std::atomic<size_t> mMemoryUsage; /// In bytes
+
+        std::unordered_map<String, String> mGroupHierarchy;
 
         bool mVerbose;
 

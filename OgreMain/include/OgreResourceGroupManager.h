@@ -412,9 +412,12 @@ namespace Ogre {
         @param name The name to give the resource group.
         @param inGlobalPool if true the resource will be loaded even a different
             group was requested in the load method as a parameter.
+        @param parent Adds a group as a child of another group, creating a hierarchy structure.
+                      If a resource can not be found in a child group, the parent group will be tested.
+                      Defaults to empty (= no parent)
         @see @ref Resource-Management
         */
-        void createResourceGroup(const String& name, bool inGlobalPool = !OGRE_RESOURCEMANAGER_STRICT);
+        void createResourceGroup(const String& name, bool inGlobalPool = !OGRE_RESOURCEMANAGER_STRICT, const String& parent = "");
 
 
         /** Initialises a resource group.
