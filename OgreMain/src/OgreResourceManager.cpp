@@ -563,7 +563,14 @@ namespace Ogre {
 
     void ResourceManager::addGroupHierarchy(const String& parent, const String& child)
     {
+        OGRE_LOCK_AUTO_MUTEX;
         mGroupHierarchy.emplace(child, parent);
+    }
+
+    void ResourceManager::removeGroupHierarchy(const String& child)
+    {
+        OGRE_LOCK_AUTO_MUTEX;
+        mGroupHierarchy.erase(child);
     }
 }
 

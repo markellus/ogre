@@ -379,6 +379,11 @@ namespace Ogre {
         mResourceGroupMap.erase(mResourceGroupMap.find(name));
         // reset current group
         mCurrentGroup = 0;
+
+        for(const auto& iter : mResourceManagerMap)
+        {
+            iter.second->removeGroupHierarchy(name);
+        }
     }
     //-----------------------------------------------------------------------
     bool ResourceGroupManager::isResourceGroupInitialised(const String& name) const

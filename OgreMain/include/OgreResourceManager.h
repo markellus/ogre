@@ -396,6 +396,7 @@ namespace Ogre {
          * in a child group, the parent group will be tested.
          */
         void addGroupHierarchy(const String& parent, const String& child);
+        void removeGroupHierarchy(const String& child);
 
         /** Definition of a pool of resources, which users can use to reuse similar
             resources many times without destroying and recreating them.
