@@ -455,23 +455,23 @@ namespace Ogre {
             it must be detached first.
         @param child The Node which is to become a child node of this one
         */
-        void addChild(Node* child);
+        virtual void addChild(Node* child);
 
         /** Reports the number of child nodes under this one.
         @deprecated use getChildren()
         */
-        uint16 numChildren(void) const { return static_cast< uint16 >( mChildren.size() ); }
+        virtual uint16 numChildren(void) const { return static_cast< uint16 >( mChildren.size() ); }
 
         /** Gets a pointer to a child node.
 
             There is an alternate getChild method which returns a named child.
         @deprecated use getChildren()
         */
-        Node* getChild(unsigned short index) const;
+        virtual Node* getChild(unsigned short index);
 
         /** Gets a pointer to a named child node.
         */
-        Node* getChild(const String& name) const;
+        virtual Node* getChild(const String& name);
 
         /// @deprecated use getChildren()
         OGRE_DEPRECATED ChildNodeIterator getChildIterator(void);
@@ -630,9 +630,9 @@ namespace Ogre {
         @param forceParentUpdate Even if the node thinks it has already told it's
             parent, tell it anyway
         */
-        void requestUpdate(Node* child, bool forceParentUpdate = false);
+        virtual void requestUpdate(Node* child, bool forceParentUpdate = false);
         /** Called by children to notify their parent that they no longer need an update. */
-        void cancelUpdate(Node* child);
+        virtual void cancelUpdate(Node* child);
 
         /** Queue a 'needUpdate' call to a node safely.
 

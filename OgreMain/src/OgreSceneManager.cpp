@@ -785,7 +785,7 @@ SceneNode* SceneManager::getRootSceneNode(void)
     return mSceneRoot.get();
 }
 //-----------------------------------------------------------------------
-SceneNode* SceneManager::getSceneNode(const String& name, bool throwExceptionIfNotFound) const
+SceneNode* SceneManager::getSceneNode(const String& name, bool throwExceptionIfNotFound)
 {
     OgreAssert(!name.empty(), "name must not be empty");
     auto i = mNamedNodes.find(name);

@@ -297,7 +297,7 @@ namespace Ogre {
 
     }
     //-----------------------------------------------------------------------
-    Node* Node::getChild(unsigned short index) const
+    Node* Node::getChild(unsigned short index)
     {
         if( index < mChildren.size() )
         {
@@ -609,7 +609,7 @@ namespace Ogre {
             return mo->getName() == name;
         }
     };
-    Node* Node::getChild(const String& name) const
+    Node* Node::getChild(const String& name)
     {
         NodeNameExists pred = {name};
         ChildNodeMap::const_iterator i = std::find_if(mChildren.begin(), mChildren.end(), pred);

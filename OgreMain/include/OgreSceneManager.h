@@ -1396,11 +1396,11 @@ namespace Ogre {
             @param name
             @param throwExceptionIfNotFound Throws an exception if the named instance does not exist
         */
-        SceneNode* getSceneNode(const String& name, bool throwExceptionIfNotFound = true) const;
+        virtual SceneNode* getSceneNode(const String& name, bool throwExceptionIfNotFound = true);
 
         /** Returns whether a scene node with the given name exists.
         */
-        bool hasSceneNode(const String& name) const { return getSceneNode(name, false) != NULL; }
+        bool hasSceneNode(const String& name) { return getSceneNode(name, false) != NULL; }
 
         /** Tells the SceneManager whether it should render the SceneNodes which
             make up the scene as well as the objects in the scene.
